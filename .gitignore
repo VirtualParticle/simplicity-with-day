@@ -1,2 +1,4 @@
 .lock-waf*
 build/
+.idea/
+simplicity-with-day.iml
