@@ -1,19 +1,19 @@
-var CLEAR_DAY = 0;
-var CLEAR_NIGHT = 1;
-var WINDY = 2;
-var COLD = 3;
-var PARTLY_CLOUDY_DAY = 4;
-var PARTLY_CLOUDY_NIGHT = 5;
-var HAZE = 6;
-var CLOUD = 7;
-var RAIN = 8;
-var SNOW = 9;
-var HAIL = 10;
-var CLOUDY = 11;
-var STORM = 12;
-var NA = 13;
+const CLEAR_DAY = 0;
+const CLEAR_NIGHT = 1;
+const WINDY = 2;
+const COLD = 3;
+const PARTLY_CLOUDY_DAY = 4;
+const PARTLY_CLOUDY_NIGHT = 5;
+const HAZE = 6;
+const CLOUD = 7;
+const RAIN = 8;
+const SNOW = 9;
+const HAIL = 10;
+const CLOUDY = 11;
+const STORM = 12;
+const NA = 13;
 
-var imageId = {
+const imageId = {
     0: STORM, //tornado
     1: STORM, //tropical storm
     2: STORM, //hurricane
@@ -65,7 +65,7 @@ var imageId = {
     3200: NA, //not available
 };
 
-var imageMapping = {
+const imageMapping = {
 
     day: {
         skc: CLEAR_DAY,
@@ -143,9 +143,8 @@ var imageMapping = {
 
 };
 
-var options = JSON.parse(localStorage.getItem('options'));
 //console.log('read options: ' + JSON.stringify(options));
-if (options === null) options = {
+let options = JSON.parse(localStorage.getItem('options')) ?? {
     "use_gps": "true",
     "location": "",
     "units": "fahrenheit",
@@ -154,15 +153,15 @@ if (options === null) options = {
 
 function getWeatherFromLatLong(latitude, longitude) {
 
-    var req = new XMLHttpRequest();
+    const req = new XMLHttpRequest();
 
-    var url = "https://api.weather.gov/points/" + latitude + "%2C" + longitude + "/stations";
+    const url = "https://api.weather.gov/points/" + latitude + "%2C" + longitude + "/stations";
 
     req.onload = function (e) {
 
-        if (req.readyState == 4) {
-            if (req.status == 200) {
-                var response = JSON.parse(req.responseText);
+        if (req.readyState === 4) {
+            if (req.status === 200) {
+                const response = JSON.parse(req.responseText);
                 if (response) {
                     getWeatherFromStationUrl(response.observationStations[0])
                 }
@@ -190,37 +189,37 @@ function test(temp) {
 
 function getWeatherFromStationUrl(url) {
 
-    var celsius = options["units"] == "celsius";
+    const celsius = options["units"] === "celsius";
 
-    var weatherUrl = url + "/observations/latest";
-    var req = new XMLHttpRequest();
+    const weatherUrl = url + "/observations/latest";
+    const req = new XMLHttpRequest();
 
     req.onload = function (e) {
 
-        if (req.readyState == 4) {
-            if (req.status == 200) {
-                var response = JSON.parse(req.responseText);
+        if (req.readyState === 4) {
+            if (req.status === 200) {
+                const response = JSON.parse(req.responseText);
                 if (response) {
 
-                    var tempValue = response.properties.temperature.value;
-                    var tempUnitCode = response.properties.temperature.unitCode.split("unit:")[1];
-                    if (tempUnitCode == "degC" && !celsius) {
+                    let tempValue = response.properties.temperature.value;
+                    const tempUnitCode = response.properties.temperature.unitCode.split("unit:")[1];
+                    if (tempUnitCode === "degC" && !celsius) {
                         tempValue *= 1.8;
                         tempValue += 32;
-                    } else if (tempUnitCode == "degF" && celsius) {
+                    } else if (tempUnitCode === "degF" && celsius) {
                         tempValue -= 32;
                         tempValue /= 1.8;
                     }
 
-                    var iconInfo = response.properties.icon.split("/");
-                    var icons = imageMapping[iconInfo[5]]; // Gets the correct icon set, either "day" or "night"
-                    var iconName = iconInfo[6].split("?")[0]; // Gets the icon name. The '?' is to get rid of the PHP image size part e.g. "?size=medium"
-                    var icon = icons[iconName];
+                    const iconInfo = response.properties.icon.split("/");
+                    const icons = imageMapping[iconInfo[5]]; // Gets the correct icon set, either "day" or "night"
+                    const iconName = iconInfo[6].split("?")[0]; // Gets the icon name. The '?' is to get rid of the PHP image size part e.g. "?size=medium"
+                    const icon = icons[iconName];
 
                     Pebble.sendAppMessage({
                         "icon": icon,
                         "temperature": Math.round(tempValue) + (celsius ? "\u00B0C" : "\u00B0F"),
-                        "invert_color": (options["invert_color"] == "true" ? 1 : 0)
+                        "invert_color": (options["invert_color"] === "true" ? 1 : 0)
                     });
 
                 }
@@ -238,20 +237,18 @@ function getWeatherFromStationUrl(url) {
 }
 
 function getWeatherFromLocation(location_name) {
-    var response;
-    var woeid = -1;
 
-    var query = encodeURI("select woeid from geo.places(1) where text=\"" + location_name + "\"");
-    var url = "http://query.yahooapis.com/v1/public/yql?q=" + query + "&format=json";
-    var req = new XMLHttpRequest();
+    const query = encodeURI("select woeid from geo.places(1) where text=\"" + location_name + "\"");
+    const url = "http://query.yahooapis.com/v1/public/yql?q=" + query + "&format=json";
+    const req = new XMLHttpRequest();
     req.open('GET', url, true);
     req.onload = function (e) {
-        if (req.readyState == 4) {
-            if (req.status == 200) {
+        if (req.readyState === 4) {
+            if (req.status === 200) {
                 // console.log(req.responseText);
-                response = JSON.parse(req.responseText);
+                const response = JSON.parse(req.responseText);
                 if (response) {
-                    woeid = response.query.results.place.woeid;
+                    const woeid = response.query.results.place.woeid;
                     getWeatherFromWoeid(woeid);
                 }
             } else {
@@ -263,29 +260,28 @@ function getWeatherFromLocation(location_name) {
 }
 
 function getWeatherFromWoeid(woeid) {
-    var celsius = options['units'] == 'celsius';
-    var query = encodeURI("select item.condition from weather.forecast where woeid = " + woeid +
+    const celsius = options['units'] === 'celsius';
+    const query = encodeURI("select item.condition from weather.forecast where woeid = " + woeid +
         " and u = " + (celsius ? "\"c\"" : "\"f\""));
-    var url = "http://query.yahooapis.com/v1/public/yql?q=" + query + "&format=json";
+    const url = "http://query.yahooapis.com/v1/public/yql?q=" + query + "&format=json";
 
-    var response;
-    var req = new XMLHttpRequest();
+    const req = new XMLHttpRequest();
     req.open('GET', url, true);
     req.onload = function (e) {
-        if (req.readyState == 4) {
-            if (req.status == 200) {
-                response = JSON.parse(req.responseText);
+        if (req.readyState === 4) {
+            if (req.status === 200) {
+                const response = JSON.parse(req.responseText);
                 if (response) {
-                    var condition = response.query.results.channel.item.condition;
-                    temperature = condition.temp + (celsius ? "\u00B0C" : "\u00B0F");
-                    icon = imageId[condition.code];
+                    const condition = response.query.results.channel.item.condition;
+                    const temperature = condition.temp + (celsius ? "\u00B0C" : "\u00B0F");
+                    const icon = imageId[condition.code];
                     // console.log("temp " + temperature);
                     // console.log("icon " + icon);
                     // console.log("condition " + condition.text);
                     Pebble.sendAppMessage({
                         "icon": icon,
                         "temperature": temperature,
-                        "invert_color": (options["invert_color"] == "true" ? 1 : 0),
+                        "invert_color": (options["invert_color"] === "true" ? 1 : 0),
                     });
                 }
             } else {
@@ -297,7 +293,7 @@ function getWeatherFromWoeid(woeid) {
 }
 
 function updateWeather() {
-    if (options['use_gps'] == "true") {
+    if (options['use_gps'] === "true") {
         window.navigator.geolocation.getCurrentPosition(locationSuccess,
             locationError,
             locationOptions);
@@ -306,10 +302,10 @@ function updateWeather() {
     }
 }
 
-var locationOptions = { "timeout": 15000, "maximumAge": 60000 };
+const locationOptions = { "timeout": 15000, "maximumAge": 60000 };
 
 function locationSuccess(pos) {
-    var coordinates = pos.coords;
+    const coordinates = pos.coords;
     getWeatherFromLatLong(coordinates.latitude, coordinates.longitude);
 }
 
@@ -322,7 +318,7 @@ function locationError(err) {
 }
 
 Pebble.addEventListener('showConfiguration', function (e) {
-    var uri = 'http://tallerthenyou.github.io/simplicity-with-day/configuration.html?' +
+    const uri = 'http://tallerthenyou.github.io/simplicity-with-day/configuration.html?' +
         'use_gps=' + encodeURIComponent(options['use_gps']) +
         '&location=' + encodeURIComponent(options['location']) +
         '&units=' + encodeURIComponent(options['units']) +
