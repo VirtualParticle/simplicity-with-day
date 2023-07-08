@@ -302,7 +302,11 @@ function updateWeather() {
     }
 }
 
-const locationOptions = { "timeout": 15000, "maximumAge": 60000 };
+const locationOptions = {
+    "timeout": 15000,
+    "maximumAge": 60000,
+    "enableHighAccuracy": false,
+};
 
 function locationSuccess(pos) {
     const coordinates = pos.coords;
