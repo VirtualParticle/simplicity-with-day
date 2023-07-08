@@ -144,7 +144,7 @@ const imageMapping = {
 };
 
 //console.log('read options: ' + JSON.stringify(options));
-let options = JSON.parse(localStorage.getItem('options')) ?? {
+var options = JSON.parse(localStorage.getItem('options')) || {
     "use_gps": "true",
     "location": "",
     "units": "fahrenheit",
@@ -201,7 +201,7 @@ function getWeatherFromStationUrl(url) {
                 const response = JSON.parse(req.responseText);
                 if (response) {
 
-                    let tempValue = response.properties.temperature.value;
+                    var tempValue = response.properties.temperature.value;
                     const tempUnitCode = response.properties.temperature.unitCode.split("unit:")[1];
                     if (tempUnitCode === "degC" && !celsius) {
                         tempValue *= 1.8;
