@@ -202,7 +202,7 @@ function getWeatherFromStationUrl(url) {
                 if (response) {
 
                     var tempValue = response.properties.temperature.value;
-                    const tempUnitCode = response.properties.temperature.unitCode.split("unit:")[1];
+                    const tempUnitCode = response.properties.temperature.unitCode.split("wmoUnit:")[1];
                     if (tempUnitCode === "degC" && !celsius) {
                         tempValue *= 1.8;
                         tempValue += 32;
@@ -312,8 +312,8 @@ function locationSuccess(pos) {
 function locationError(err) {
     console.warn('location error (' + err.code + '): ' + err.message);
     Pebble.sendAppMessage({
-        "icon": 11,
-        "temperature": ""
+        "icon": 13,
+        "temperature": "e:" + err.code
     });
 }
 
